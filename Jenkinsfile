@@ -6,7 +6,17 @@ pipeline{
     //     choice{ name: 'TARGET_ENV', choices['dev', 'stage', 'prod'], description: 'Deployment Environment'}
     // }
     stages{
-        stage('Build'){
+        stage('Build On PR Merge'){
+
+            when{
+                allOf {
+                    branch 'main'
+                    expression { 
+                        def msg = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                        return msg.contains('Merge pull request')
+                    }
+                }
+            }
             steps{
                 script{
                     echo'Building .... from github'
