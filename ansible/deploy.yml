@@ -1,0 +1,64 @@
+---
+- name: Build and Deploy Bhushan photoQuest
+  hosts: all
+  vars:
+    docker_front_repo: "nagabhushan9676/b-photoquest-front"
+    docker_back_repo: "nagabhushan9676/b-photoquest"
+
+  tasks:
+## Clone the Repos
+    - name: Clone Angular frontend repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "../build/frontend"
+        version: main
+        force: yes
+
+    - name: Clone Node Backend
+      git:
+        repo: "{{ repo_url_backend }}"
+        dest: "../build/backend"
+        version:  main
+        force: yes
+## Build APP
+    - name: Install Node.js dependencies
+      command: "npm install"
+      args:
+        chdir: "../build/backend"
+    - name: Install Frontend dependencies
+      command: "npm install && npm run build"
+      args:
+        chdir: "../build/frontend"
+## Build Docker Image
+    - name: Build Frontend Docker image
+      docker_image:
+        path: "../build/frontend"
+        name: "{{ docker_front_repo }}"
+        tag: "{{ docker_image_tag }}"
+        push: yes
+        source: build
+        build:
+          pull: yes
+      
+    - name: Build Backend Docker image
+      docker_image:
+        path: "../build/backend"
+        name: "{{ docker_back_repo }}"
+        tag: "{{ docker_image_tag }}"
+        push: yes
+        source: build
+        build:
+          pull: yes
+## Argocd Deploy
+    - name: Update ArgoCD for frontend
+      command: >
+        argocd app set frontend --parameter image.tag={{ docker_image_tag }}
+    - name: Sync ArgoCD for frontend
+      command: argocd app sync frontend-{{ target_env }}
+      
+    - name:  Update ArgoCD for backend
+      command: >
+        argocd app set backend --parameter image.tag={{ docker_image_tag }} 
+        
+    - name: Sync ArgoCD for backend
+      command: argocd app sync backend-{{ target_env }}
