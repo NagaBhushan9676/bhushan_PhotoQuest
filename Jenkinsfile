@@ -1,8 +1,8 @@
 pipeline{
     agent any
     parameters {
-        string(name: 'FRONTEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest/searchI', description: 'Git repository for the Frontend', trim: true)
-        string(name: 'BACKEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest/backend', description: 'Git repository for the Backend', trim: true)
+        string(name: 'FRONTEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest/tree/main/searchI', description: 'Git repository for the Frontend', trim: true)
+        string(name: 'BACKEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest/tree/main/backend', description: 'Git repository for the Backend', trim: true)
         choice(name: 'TARGET_ENV', choices: ['dev', 'stage', 'prod'], description: 'Deployment Environment')
     }
 
