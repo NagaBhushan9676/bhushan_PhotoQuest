@@ -1,17 +1,11 @@
 pipeline{
     agent any
     parameters {
-        string{ name: 'FRONTEND_REPO', defaultValue: 'main', description: 'Git branch for the Frontend', trim:true}
-        string{ name: 'BACKEND_REPO', defaultValue: 'main', description: 'Git branch for the Backend', trim:true}
-        choice{ name: 'TARGET_ENV', choices['dev', 'stage', 'prod'], description: 'Deployment Environment'}
+        string(name: 'FRONTEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest/searchI', description: 'Git repository for the Frontend', trim: true)
+        string(name: 'BACKEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest/backend', description: 'Git repository for the Backend', trim: true)
+        choice(name: 'TARGET_ENV', choices: ['dev', 'stage', 'prod'], description: 'Deployment Environment')
     }
 
-    environment {
-        DOCKER_HUB_USER = 'nagabhushan9676'
-        FRONTEND_REPO = "${DOCKER_HUB_USER}/b-photoquest-front"
-        BACKEND_REPO = "${DOCKER_HUB_USER}/b-photoquest"
-       
-    }
     stages{
         
         
@@ -25,14 +19,15 @@ pipeline{
                      }
                 }
             }
-        }stage('Code Checkout'){
-            steps{
-                script{
-                    dir('frontend'){
-                        git branch: '${params.FRONTEND_REPO}', url: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest/searchI'
+        }
+        stage('Code Checkout') {
+            steps {
+                script {
+                    dir('frontend') {
+                        git branch: 'main', url: params.FRONTEND_REPO
                     }
-                    dir('backend'){
-                        git branch: '${params.BACKEND_REPO}', url: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest/backend'
+                    dir('backend') {
+                        git branch: 'main', url: params.BACKEND_REPO
                     }
                 }
             }
