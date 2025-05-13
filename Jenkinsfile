@@ -19,6 +19,9 @@ pipeline{
                      }
                 }
             }
+             steps {
+                echo 'Build triggered by PR merge to main'
+            }
         }
         stage('Code Checkout') {
             steps {
