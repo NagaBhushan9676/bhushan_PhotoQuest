@@ -43,14 +43,13 @@ pipeline {
         stage('Deploy with Ansible') {
             steps {
                 script {
-                    
                     dir('ansible') {
                         bat """
-                            ansible-playbook deploy.yml ^
-                            -e \"frontend_branch=%FRONTEND_REPO% ^
-                            backend_branch=%BACKEND_REPO% ^
-                            target_env=%TARGET_ENV% ^
-                            build_number=%BUILD_NUMBER%\"
+                            wsl ansible-playbook deploy.yml ^
+                            -e \"frontend_branch=${params.FRONTEND_REPO} ^
+                            backend_branch=${params.BACKEND_REPO} ^
+                            target_env=${params.TARGET_ENV} ^
+                            build_number=${env.BUILD_NUMBER}\"
                         """
                     }
                 }
