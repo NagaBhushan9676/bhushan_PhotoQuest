@@ -35,7 +35,7 @@ pipeline {
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
                 }
             }
         }
@@ -45,12 +45,12 @@ pipeline {
                 script {
                     // ✅ Running Ansible playbook assuming an `ansible/` directory exists
                     dir('ansible') {
-                        sh """
-                            ansible-playbook deploy.yml \
-                            -e \"frontend_branch=${params.FRONTEND_REPO} \
-                            backend_branch=${params.BACKEND_REPO} \
-                            target_env=${params.TARGET_ENV} \
-                            build_number=${env.BUILD_NUMBER}\"
+                        bat """
+                            ansible-playbook deploy.yml ^
+                            -e \"frontend_branch=%FRONTEND_REPO% ^
+                            backend_branch=%BACKEND_REPO% ^
+                            target_env=%TARGET_ENV% ^
+                            build_number=%BUILD_NUMBER%\"
                         """
                     }
                 }
