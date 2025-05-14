@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'willhallonline/ansible:2.11-alpine' // Lightweight Ansible container
+            image 'cytopia/ansible:2.11' // Maintained Ansible container
             args '-v /run/docker.sock:/var/run/docker.sock' // Allows Docker-in-Docker
         }
     }
