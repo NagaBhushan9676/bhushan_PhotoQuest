@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'willhallonline/ansible:2.11-alpine' // Lightweight Ansible container
+            args '-v /run/docker.sock:/var/run/docker.sock' // Allows Docker-in-Docker
+        }
+    }
 
     parameters {
         string(name: 'FRONTEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest.git', description: 'Git repository for the Frontend', trim: true)
@@ -26,7 +31,6 @@ pipeline {
         stage('Code Checkout') {
             steps {
                 script {
-                    
                     git branch: 'main', url: params.FRONTEND_REPO
                 }
             }
@@ -35,7 +39,7 @@ pipeline {
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                    sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
                 }
             }
         }
@@ -44,8 +48,8 @@ pipeline {
             steps {
                 script {
                     dir('ansible') {
-                        bat """
-                            wsl ansible-playbook deploy.yml ^
+                        sh """
+                            ansible-playbook deploy.yml \
                             -e \"frontend_branch=${params.FRONTEND_REPO} backend_branch=${params.BACKEND_REPO} target_env=${params.TARGET_ENV} build_number=${env.BUILD_NUMBER}\"
                         """
                     }
