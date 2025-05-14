@@ -1,14 +1,13 @@
 pipeline{
     agent any
     parameters {
-        string(name: 'FRONTEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest/tree/main/searchI', description: 'Git repository for the Frontend', trim: true)
-        string(name: 'BACKEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest/tree/main/backend', description: 'Git repository for the Backend', trim: true)
+        string(name: 'FRONTEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest.git', description: 'Git repository for the Frontend', trim: true)
+        string(name: 'BACKEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest.git', description: 'Git repository for the Backend', trim: true)
         choice(name: 'TARGET_ENV', choices: ['dev', 'stage', 'prod'], description: 'Deployment Environment')
     }
 
     stages{
-        
-        
+          
         stage('Build on PR merge'){
             when{
                 allOf{
@@ -26,7 +25,7 @@ pipeline{
         stage('Code Checkout') {
             steps {
                 script {
-                    dir('frontend') {
+                    dir('searchI') {
                         git branch: 'main', url: params.FRONTEND_REPO
                     }
                     dir('backend') {
