@@ -46,10 +46,7 @@ pipeline {
                     dir('ansible') {
                         bat """
                             wsl ansible-playbook deploy.yml ^
-                            -e \"frontend_branch=${params.FRONTEND_REPO} ^
-                            backend_branch=${params.BACKEND_REPO} ^
-                            target_env=${params.TARGET_ENV} ^
-                            build_number=${env.BUILD_NUMBER}\"
+                            -e \"frontend_branch=${params.FRONTEND_REPO} backend_branch=${params.BACKEND_REPO} target_env=${params.TARGET_ENV} build_number=${env.BUILD_NUMBER}\"
                         """
                     }
                 }
