@@ -43,7 +43,7 @@ pipeline {
         stage('Deploy with Ansible') {
             steps {
                 script {
-                    // ✅ Running Ansible playbook assuming an `ansible/` directory exists
+                    
                     dir('ansible') {
                         bat """
                             ansible-playbook deploy.yml ^
