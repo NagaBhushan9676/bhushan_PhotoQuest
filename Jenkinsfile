@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'cytopia/ansible:2.11' // Maintained Ansible container
-            args '-v /run/docker.sock:/var/run/docker.sock' // Allows Docker-in-Docker
-        }
-    }
+    agent any
 
     parameters {
         string(name: 'FRONTEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest.git', description: 'Git repository for the Frontend', trim: true)
@@ -18,7 +13,7 @@ pipeline {
                 allOf {
                     branch 'main'
                     expression {
-                        def msg = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                        def msg = bat(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
                         return msg.contains('Merge pull request')
                     }
                 }
@@ -39,7 +34,7 @@ pipeline {
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
                 }
             }
         }
@@ -48,8 +43,8 @@ pipeline {
             steps {
                 script {
                     dir('ansible') {
-                        sh """
-                            ansible-playbook deploy.yml \
+                        bat """
+                            wsl ansible-playbook deploy.yml ^
                             -e \"frontend_branch=${params.FRONTEND_REPO} backend_branch=${params.BACKEND_REPO} target_env=${params.TARGET_ENV} build_number=${env.BUILD_NUMBER}\"
                         """
                     }
