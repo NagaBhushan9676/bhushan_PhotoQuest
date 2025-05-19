@@ -1,10 +1,10 @@
 pipeline {
     agent {
-        docker {
-            image 'willhallonline/ansible:latest'
-            args "-v ${env.WORKSPACE}:/workspace -w /workspace"
-        }
+    docker {
+        image 'willhallonline/ansible:latest'
+        args "-v /mnt/d/Task/Angular@1:/workspace -w /workspace"
     }
+}
 
     parameters {
         string(name: 'FRONTEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest.git', description: 'Git repository for the Frontend', trim: true)
