@@ -39,7 +39,10 @@ pipeline {
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+                    sh '''
+                        apt-get update && apt-get install -y docker.io
+                        docker login -u $DOCKER_USER -p $DOCKER_PASS
+                    '''
                 }
             }
         }
