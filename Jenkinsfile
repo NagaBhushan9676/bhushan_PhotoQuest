@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'willhallonline/ansible:latest'
-            args "-v ${env.WORKSPACE}:/workspace"
+            args "-v ${env.WORKSPACE}:/workspace -w /workspace"
         }
     }
 
