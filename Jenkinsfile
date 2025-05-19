@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'willhallonline/ansible:latest'
+            args "-v ${env.WORKSPACE}:/workspace"
+        }
+    }
 
     parameters {
         string(name: 'FRONTEND_REPO', defaultValue: 'https://github.com/NagaBhushan9676/bhushan_PhotoQuest.git', description: 'Git repository for the Frontend', trim: true)
@@ -13,7 +18,7 @@ pipeline {
                 allOf {
                     branch 'main'
                     expression {
-                        def msg = bat(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                        def msg = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
                         return msg.contains('Merge pull request')
                     }
                 }
@@ -34,7 +39,7 @@ pipeline {
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                    sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
                 }
             }
         }
@@ -42,12 +47,11 @@ pipeline {
         stage('Deploy with Ansible') {
             steps {
                 script {
-                    dir('ansible') {
-                        bat """
-                            wsl ansible-playbook deploy.yml ^
-                            -e \"frontend_branch=${params.FRONTEND_REPO} backend_branch=${params.BACKEND_REPO} target_env=${params.TARGET_ENV} build_number=${env.BUILD_NUMBER}\"
-                        """
-                    }
+                    sh '''
+                        cd /workspace/ansible
+                        ansible-playbook deploy.yml \
+                        -e "frontend_branch=${params.FRONTEND_REPO} backend_branch=${params.BACKEND_REPO} target_env=${params.TARGET_ENV} build_number=${env.BUILD_NUMBER}"
+                    '''
                 }
             }
         }
