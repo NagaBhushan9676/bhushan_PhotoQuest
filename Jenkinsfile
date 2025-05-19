@@ -1,7 +1,7 @@
 pipeline {
     agent {
     docker {
-        image 'willhallonline/ansible:latest'
+        image 'cytopia/ansible:2.11'
         args "-v /mnt/d/Task/Angular@1:/workspace -w /workspace"
     }
 }
@@ -39,7 +39,6 @@ pipeline {
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'PATH=$PATH:/usr/bin docker login -u $DOCKER_USER -p $DOCKER_PASS'
                     sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
                 }
             }
