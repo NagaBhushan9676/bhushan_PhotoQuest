@@ -2,7 +2,7 @@ pipeline {
     agent {
     docker {
         image 'cytopia/ansible:2.11'
-        args "-v /mnt/d/Task/Angular@1:/workspace -w /workspace"
+        args "-v /mnt/d/Task/Angular@1:/workspace -v /var/run/docker.sock:/var/run/docker.sock -w /workspace"
     }
 }
 
