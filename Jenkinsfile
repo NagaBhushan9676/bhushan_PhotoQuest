@@ -1,7 +1,7 @@
 pipeline {
     agent {
     docker {
-        image 'cytopia/ansible:2.11'
+         image 'nagabhushan9676/docker-ansible:latest'
         args "-v /mnt/d/Task/Angular@1:/workspace -v /var/run/docker.sock:/var/run/docker.sock -w /workspace"
     }
 }
@@ -39,10 +39,7 @@ pipeline {
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        apt-get update && apt-get install -y docker.io
-                        docker login -u $DOCKER_USER -p $DOCKER_PASS
-                    '''
+                    sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
                 }
             }
         }
