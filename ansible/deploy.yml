@@ -9,14 +9,14 @@
 ## Clone the Repos
     - name: Clone Angular frontend repository
       git:
-        repo: "{{ repo_url }}"
+        repo: "{{ frontend_repo }}"
         dest: "../build/frontend"
         version: main
         force: yes
 
     - name: Clone Node Backend
       git:
-        repo: "{{ repo_url_backend }}"
+        repo: "{{ backend_repo }}"
         dest: "../build/backend"
         version:  main
         force: yes
