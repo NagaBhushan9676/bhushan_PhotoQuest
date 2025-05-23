@@ -2,7 +2,7 @@ pipeline {
     agent {
     docker {
          image 'nagabhushan9676/docker-ansible:latest'
-        args "-v /mnt/d/Task/Angular@1:/workspace -v /var/run/docker.sock:/var/run/docker.sock -w /workspace"
+        args "-v /mnt/d/Task/Angular@1:/workspace -v /var/run/docker.sock:/var/run/docker.sock -w /workspace --user root"
     }
 }
 
