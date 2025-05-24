@@ -7,19 +7,24 @@
 
   tasks:
 ## Clone the Repos
-    - name: Clone Angular frontend repository
+    - name: Clone monorepo
       git:
         repo: "{{ frontend_repo }}"
-        dest: "../build/frontend"
+        dest: "../build/source"
         version: main
         force: yes
 
-    - name: Clone Node Backend
-      git:
-        repo: "{{ backend_repo }}"
-        dest: "../build/backend"
-        version:  main
-        force: yes
+    - name: Copy frontend (searchI) to build/frontend
+      copy:
+        src: "../build/source/searchI/"
+        dest: "../build/frontend/"
+        remote_src: yes
+
+    - name: Copy backend to build/backend
+      copy:
+        src: "../build/source/backend/"
+        dest: "../build/backend/"
+        remote_src: yes
 ## Build APP
     - name: Install Node.js dependencies
       command: "npm install"
