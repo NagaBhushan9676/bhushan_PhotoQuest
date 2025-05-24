@@ -7,6 +7,11 @@
 
   tasks:
 ## Clone the Repos
+    - name: Ensure build/source is absent before cloning
+      file:
+        path: "../build/source"
+        state: absent
+
     - name: Clone monorepo
       git:
         repo: "{{ frontend_repo }}"
