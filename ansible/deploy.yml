@@ -12,6 +12,15 @@
         path: "../build/source"
         state: absent
 
+    - name: Double-check build/source is gone
+      stat:
+        path: "../build/source"
+      register: build_source_stat
+
+    - name: Force remove build/source if still exists
+      command: rm -rf ../build/source
+      when: build_source_stat.stat.exists
+
     - name: Clone monorepo
       git:
         repo: "{{ frontend_repo }}"
