@@ -1,83 +1,81 @@
 ---
-- name: Build and Deploy Bhushan photoQuest
+- name: Build and Deploy Bhushan PhotoQuest
   hosts: all
   vars:
     docker_front_repo: "nagabhushan9676/b-photoquest-front"
     docker_back_repo: "nagabhushan9676/b-photoquest"
 
   tasks:
-## Clone the Repos
-    - name: Ensure build/source is absent before cloning
-      file:
-        path: "../build/source"
-        state: absent
 
-    - name: Double-check build/source is gone
-      stat:
-        path: "../build/source"
-      register: build_source_stat
+  ## Cleanup
+  - name: Ensure old source directory is removed
+    file:
+      path: "../build/source"
+      state: absent
 
-    - name: Force remove build/source if still exists
-      command: rm -rf ../build/source
-      when: build_source_stat.stat.exists
+  ## Clone and Copy
+  - name: Clone monorepo
+    git:
+      repo: "{{ frontend_repo }}"
+      dest: "../build/source"
+      version: main
+      force: yes
 
-    - name: Clone monorepo
-      git:
-        repo: "{{ frontend_repo }}"
-        dest: "../build/source"
-        version: main
-        force: yes
+  - name: Copy frontend (searchI) to build/frontend
+    copy:
+      src: "../build/source/searchI/"
+      dest: "../build/frontend/"
+      remote_src: yes
 
-    - name: Copy frontend (searchI) to build/frontend
-      copy:
-        src: "../build/source/searchI/"
-        dest: "../build/frontend/"
-        remote_src: yes
+  - name: Copy backend to build/backend
+    copy:
+      src: "../build/source/backend/"
+      dest: "../build/backend/"
+      remote_src: yes
 
-    - name: Copy backend to build/backend
-      copy:
-        src: "../build/source/backend/"
-        dest: "../build/backend/"
-        remote_src: yes
-## Build APP
-    - name: Install Node.js dependencies
-      command: "npm install"
-      args:
-        chdir: "../build/backend"
-    - name: Install Frontend dependencies
-      command: "npm install && npm run build"
-      args:
-        chdir: "../build/frontend"
-## Build Docker Image
-    - name: Build Frontend Docker image
-      docker_image:
-        path: "../build/frontend"
-        name: "{{ docker_front_repo }}"
-        tag: "{{ docker_image_tag }}"
-        push: yes
-        source: build
-        build:
-          pull: yes
-      
-    - name: Build Backend Docker image
-      docker_image:
-        path: "../build/backend"
-        name: "{{ docker_back_repo }}"
-        tag: "{{ docker_image_tag }}"
-        push: yes
-        source: build
-        build:
-          pull: yes
-## Argocd Deploy
-    - name: Update ArgoCD for frontend
-      command: >
-        argocd app set frontend --parameter image.tag={{ docker_image_tag }}
-    - name: Sync ArgoCD for frontend
-      command: argocd app sync frontend-{{ target_env }}
-      
-    - name:  Update ArgoCD for backend
-      command: >
-        argocd app set backend --parameter image.tag={{ docker_image_tag }} 
-        
-    - name: Sync ArgoCD for backend
-      command: argocd app sync backend-{{ target_env }}
+  ## Install Dependencies & Build
+  - name: Install backend dependencies
+    command: npm install
+    args:
+      chdir: "../build/backend"
+
+  - name: Install and build frontend
+    command: npm install && npm run build
+    args:
+      chdir: "../build/frontend"
+
+  ## Docker Build & Push
+  - name: Build and push frontend Docker image
+    docker_image:
+      name: "{{ docker_front_repo }}"
+      tag: "{{ docker_image_tag }}"
+      path: "../build/frontend"
+      source: build
+      push: yes
+      build:
+        pull: yes
+
+  - name: Build and push backend Docker image
+    docker_image:
+      name: "{{ docker_back_repo }}"
+      tag: "{{ docker_image_tag }}"
+      path: "../build/backend"
+      source: build
+      push: yes
+      build:
+        pull: yes
+
+  ## ArgoCD Deployment
+  - name: Update ArgoCD image tag for frontend
+    command: >
+      argocd app set frontend --parameter image.tag={{ docker_image_tag }}
+
+  - name: Sync ArgoCD frontend app
+    command: argocd app sync frontend-{{ target_env }}
+
+  - name: Update ArgoCD image tag for backend
+    command: >
+      argocd app set backend --parameter image.tag={{ docker_image_tag }}
+
+  - name: Sync ArgoCD backend app
+    command: argocd app sync backend-{{ target_env }}
