@@ -7,75 +7,81 @@
 
   tasks:
 
-  ## Cleanup
-  - name: Ensure old source directory is removed
-    file:
-      path: "../build/source"
-      state: absent
+    ## Cleanup
+    - name: Ensure old source directory is removed
+      file:
+        path: "../build/source"
+        state: absent
 
-  ## Clone and Copy
-  - name: Clone monorepo
-    git:
-      repo: "{{ frontend_repo }}"
-      dest: "../build/source"
-      version: main
-      force: yes
+    ## Debug: Show repo URL
+    - name: Show frontend repo URL
+      debug:
+        msg: "Cloning frontend repo from {{ frontend_repo }}"
 
-  - name: Copy frontend (searchI) to build/frontend
-    copy:
-      src: "../build/source/searchI/"
-      dest: "../build/frontend/"
-      remote_src: yes
+    - name: Clone monorepo (frontend repo)
+      git:
+        repo: "{{ frontend_repo }}"
+        dest: "../build/source"
+        version: main
+        force: yes
+        clone: yes
 
-  - name: Copy backend to build/backend
-    copy:
-      src: "../build/source/backend/"
-      dest: "../build/backend/"
-      remote_src: yes
+    ## Copy frontend and backend from monorepo
+    - name: Copy frontend (searchI) to build/frontend
+      copy:
+        src: "../build/source/searchI/"
+        dest: "../build/frontend/"
+        remote_src: yes
 
-  ## Install Dependencies & Build
-  - name: Install backend dependencies
-    command: npm install
-    args:
-      chdir: "../build/backend"
+    - name: Copy backend to build/backend
+      copy:
+        src: "../build/source/backend/"
+        dest: "../build/backend/"
+        remote_src: yes
 
-  - name: Install and build frontend
-    command: npm install && npm run build
-    args:
-      chdir: "../build/frontend"
+    ## Install Dependencies & Build
+    - name: Install backend dependencies
+      command: npm install
+      args:
+        chdir: "../build/backend"
 
-  ## Docker Build & Push
-  - name: Build and push frontend Docker image
-    docker_image:
-      name: "{{ docker_front_repo }}"
-      tag: "{{ docker_image_tag }}"
-      path: "../build/frontend"
-      source: build
-      push: yes
-      build:
-        pull: yes
+    - name: Install and build frontend
+      command: npm install && npm run build
+      args:
+        chdir: "../build/frontend"
 
-  - name: Build and push backend Docker image
-    docker_image:
-      name: "{{ docker_back_repo }}"
-      tag: "{{ docker_image_tag }}"
-      path: "../build/backend"
-      source: build
-      push: yes
-      build:
-        pull: yes
+    ## Docker Build & Push
+    - name: Build and push frontend Docker image
+      docker_image:
+        name: "{{ docker_front_repo }}"
+        tag: "{{ docker_image_tag }}"
+        path: "../build/frontend"
+        source: build
+        push: yes
+        build:
+          pull: yes
 
-  ## ArgoCD Deployment
-  - name: Update ArgoCD image tag for frontend
-    command: >
-      argocd app set frontend --parameter image.tag={{ docker_image_tag }}
+    - name: Build and push backend Docker image
+      docker_image:
+        name: "{{ docker_back_repo }}"
+        tag: "{{ docker_image_tag }}"
+        path: "../build/backend"
+        source: build
+        push: yes
+        build:
+          pull: yes
 
-  - name: Sync ArgoCD frontend app
-    command: argocd app sync frontend-{{ target_env }}
+    ## ArgoCD Deployment
+    - name: Update ArgoCD image tag for frontend
+      command: >
+        argocd app set frontend --parameter image.tag={{ docker_image_tag }}
 
-  - name: Update ArgoCD image tag for backend
-    command: >
-      argocd app set backend --parameter image.tag={{ docker_image_tag }}
+    - name: Sync ArgoCD frontend app
+      command: argocd app sync frontend-{{ target_env }}
 
-  - name: Sync ArgoCD backend app
-    command: argocd app sync backend-{{ target_env }}
+    - name: Update ArgoCD image tag for backend
+      command: >
+        argocd app set backend --parameter image.tag={{ docker_image_tag }}
+
+    - name: Sync ArgoCD backend app
+      command: argocd app sync backend-{{ target_env }}
