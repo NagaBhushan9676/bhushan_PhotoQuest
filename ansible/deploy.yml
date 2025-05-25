@@ -1,87 +1,85 @@
 ---
 - name: Build and Deploy Bhushan PhotoQuest
-  hosts: all
+  hosts: localhost
+  connection: local
   vars:
     docker_front_repo: "nagabhushan9676/b-photoquest-front"
     docker_back_repo: "nagabhushan9676/b-photoquest"
+    workspace_path: "/workspace"  # Matches your Jenkins volume mount
+    build_path: "/workspace/build"  # All builds land here
 
   tasks:
-
-    ## Cleanup
-    - name: Ensure old source directory is removed
+    ### CLEANUP ###
+    - name: Remove previous build directory
       file:
-        path: "../build/source"
+        path: "{{ build_path }}"
         state: absent
 
-    ## Debug: Show repo URL
-    - name: Show frontend repo URL
-      debug:
-        msg: "Cloning frontend repo from {{ frontend_repo }}"
+    ### PREPARE BUILD STRUCTURE ###
+    - name: Create build directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - "{{ build_path }}/frontend"
+        - "{{ build_path }}/backend"
 
-    - name: Clone monorepo (frontend repo)
-      git:
-        repo: "{{ frontend_repo }}"
-        dest: "../build/source"
-        version: main
-        force: yes
-        clone: yes
-
-    ## Copy frontend and backend from monorepo
-    - name: Copy frontend (searchI) to build/frontend
+    ### COPY CODE FROM JENKINS WORKSPACE ###
+    - name: Copy frontend (searchI) to build folder
       copy:
-        src: "../build/source/searchI/"
-        dest: "../build/frontend/"
+        src: "{{ workspace_path }}/searchI/"
+        dest: "{{ build_path }}/frontend/"
         remote_src: yes
 
-    - name: Copy backend to build/backend
+    - name: Copy backend to build folder
       copy:
-        src: "../build/source/backend/"
-        dest: "../build/backend/"
+        src: "{{ workspace_path }}/backend/"
+        dest: "{{ build_path }}/backend/"
         remote_src: yes
 
-    ## Install Dependencies & Build
+    ### BUILD STEPS ###
     - name: Install backend dependencies
       command: npm install
       args:
-        chdir: "../build/backend"
+        chdir: "{{ build_path }}/backend"
 
-    - name: Install and build frontend
+    - name: Build frontend
       command: npm install && npm run build
       args:
-        chdir: "../build/frontend"
+        chdir: "{{ build_path }}/frontend"
 
-    ## Docker Build & Push
-    - name: Build and push frontend Docker image
+    ### DOCKER IMAGE BUILD & PUSH ###
+    - name: Build/push frontend Docker image
       docker_image:
         name: "{{ docker_front_repo }}"
-        tag: "{{ docker_image_tag }}"
-        path: "../build/frontend"
+        tag: "{{ build_number }}"
+        path: "{{ build_path }}/frontend"
         source: build
         push: yes
         build:
           pull: yes
 
-    - name: Build and push backend Docker image
+    - name: Build/push backend Docker image
       docker_image:
         name: "{{ docker_back_repo }}"
-        tag: "{{ docker_image_tag }}"
-        path: "../build/backend"
+        tag: "{{ build_number }}"
+        path: "{{ build_path }}/backend"
         source: build
         push: yes
         build:
           pull: yes
 
-    ## ArgoCD Deployment
-    - name: Update ArgoCD image tag for frontend
+    ### ARGOCD DEPLOYMENT ###
+    - name: Update frontend image tag in ArgoCD
       command: >
-        argocd app set frontend --parameter image.tag={{ docker_image_tag }}
+        argocd app set frontend --parameter image.tag={{ build_number }}
 
-    - name: Sync ArgoCD frontend app
+    - name: Sync frontend app in ArgoCD
       command: argocd app sync frontend-{{ target_env }}
 
-    - name: Update ArgoCD image tag for backend
+    - name: Update backend image tag in ArgoCD
       command: >
-        argocd app set backend --parameter image.tag={{ docker_image_tag }}
+        argocd app set backend --parameter image.tag={{ build_number }}
 
-    - name: Sync ArgoCD backend app
+    - name: Sync backend app in ArgoCD
       command: argocd app sync backend-{{ target_env }}
