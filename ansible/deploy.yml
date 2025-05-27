@@ -25,17 +25,24 @@
         - "{{ build_path }}/backend"
 
     ### COPY CODE FROM JENKINS WORKSPACE ###
-    - name: Copy frontend (searchI) to build folder
-      copy:
+       ### COPY CODE FROM JENKINS WORKSPACE ###
+    - name: Sync frontend (searchI) to build folder
+      synchronize:
         src: "{{ workspace_path }}/searchI/"
         dest: "{{ build_path }}/frontend/"
-        remote_src: yes
+        delete: yes
+        recursive: yes
+        rsync_opts:
+          - "--exclude=node_modules"
 
-    - name: Copy backend to build folder
-      copy:
+    - name: Sync backend to build folder
+      synchronize:
         src: "{{ workspace_path }}/backend/"
         dest: "{{ build_path }}/backend/"
-        remote_src: yes
+        delete: yes
+        recursive: yes
+        rsync_opts:
+          - "--exclude=node_modules"
 
     ### BUILD STEPS ###
     - name: Install backend dependencies
@@ -44,7 +51,7 @@
         chdir: "{{ build_path }}/backend"
 
     - name: Build frontend
-      command: npm install && npm run build
+      shell: npm install && npm run build
       args:
         chdir: "{{ build_path }}/frontend"
 
