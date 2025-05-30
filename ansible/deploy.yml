@@ -17,6 +17,7 @@
         push: yes
         build:
           pull: yes
+          path: .
           context_subdir: "searchI"   # Path to frontend Dockerfile in repo
 
     - name: Build/push backend Docker image
@@ -28,6 +29,7 @@
         push: yes
         build:
           pull: yes
+          path: .
           context_subdir: "backend"   # Path to backend Dockerfile in repo
 
     ### ARGOCD DEPLOYMENT ###
