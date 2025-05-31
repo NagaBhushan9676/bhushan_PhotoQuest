@@ -25,12 +25,16 @@
       shell: |
         docker build -t {{ docker_front_repo }}:{{ build_number }} -f searchI/Dockerfile ./searchI
         docker push {{ docker_front_repo }}:{{ build_number }}
+      args:
+        chdir: "{{ playbook_dir }}/.."
 
     - name: Build/push backend Docker image
       shell: |
         docker build -t {{ docker_back_repo }}:{{ build_number }} -f backend/Dockerfile ./backend
         docker push {{ docker_back_repo }}:{{ build_number }}
-
+      args:
+        chdir: "{{ playbook_dir }}/.."
+        
     - name: Build/push backend Docker image
       docker_image:
         name: "{{ docker_back_repo }}"
