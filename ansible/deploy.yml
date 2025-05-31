@@ -6,19 +6,30 @@
     docker_front_repo: "nagabhushan9676/b-photoquest-front"
     docker_back_repo: "nagabhushan9676/b-photoquest"
 
+  # tasks:
+  #   ### DOCKER IMAGE BUILD & PUSH ###
+  #   - name: Build/push frontend Docker image
+  #     docker_image:
+  #       name: "{{ docker_front_repo }}"
+  #       tag: "{{ build_number }}"
+  #       repository: "https://github.com/NagaBhushan9676/bhushan_PhotoQuest.git"
+  #       source: build
+  #       push: yes
+  #       build:
+  #         pull: yes
+  #         path: .
+  #         context_subdir: "searchI"   # Path to frontend Dockerfile in repo
   tasks:
     ### DOCKER IMAGE BUILD & PUSH ###
     - name: Build/push frontend Docker image
-      docker_image:
-        name: "{{ docker_front_repo }}"
-        tag: "{{ build_number }}"
-        repository: "https://github.com/NagaBhushan9676/bhushan_PhotoQuest.git"
-        source: build
-        push: yes
-        build:
-          pull: yes
-          path: .
-          context_subdir: "searchI"   # Path to frontend Dockerfile in repo
+      shell: |
+        docker build -t {{ docker_front_repo }}:{{ build_number }} -f searchI/Dockerfile ./searchI
+        docker push {{ docker_front_repo }}:{{ build_number }}
+
+    - name: Build/push backend Docker image
+      shell: |
+        docker build -t {{ docker_back_repo }}:{{ build_number }} -f backend/Dockerfile ./backend
+        docker push {{ docker_back_repo }}:{{ build_number }}
 
     - name: Build/push backend Docker image
       docker_image:
@@ -46,96 +57,3 @@
 
     - name: Sync backend app in ArgoCD
       command: argocd app sync backend-{{ target_env }}
-
-# ---
-# - name: Build and Deploy Bhushan PhotoQuest
-#   hosts: localhost
-#   connection: local
-#   vars:
-#     docker_front_repo: "nagabhushan9676/b-photoquest-front"
-#     docker_back_repo: "nagabhushan9676/b-photoquest"
-#     workspace_path: "/workspace"  # Matches your Jenkins volume mount
-#     build_path: "/workspace/build"  # All builds land here
-
-#   tasks:
-#     ### CLEANUP ###
-#     - name: Remove previous build directory
-#       file:
-#         path: "{{ build_path }}"
-#         state: absent
-
-#     ### PREPARE BUILD STRUCTURE ###
-#     - name: Create build directories
-#       file:
-#         path: "{{ item }}"
-#         state: directory
-#       loop:
-#         - "{{ build_path }}/frontend"
-#         - "{{ build_path }}/backend"
-
-#     ### COPY CODE FROM JENKINS WORKSPACE ###
-#        ### COPY CODE FROM JENKINS WORKSPACE ###
-#     - name: Sync frontend (searchI) to build folder
-#       synchronize:
-#         src: "{{ workspace_path }}/searchI/"
-#         dest: "{{ build_path }}/frontend/"
-#         delete: yes
-#         recursive: yes
-#         rsync_opts:
-#           - "--exclude=node_modules"
-
-#     - name: Sync backend to build folder
-#       synchronize:
-#         src: "{{ workspace_path }}/backend/"
-#         dest: "{{ build_path }}/backend/"
-#         delete: yes
-#         recursive: yes
-#         rsync_opts:
-#           - "--exclude=node_modules"
-
-#     ### BUILD STEPS ###
-#     - name: Install backend dependencies
-#       command: npm install
-#       args:
-#         chdir: "{{ build_path }}/backend"
-
-#     - name: Build frontend
-#       shell: npm install && npm run build
-#       args:
-#         chdir: "{{ build_path }}/frontend"
-
-#     ### DOCKER IMAGE BUILD & PUSH ###
-#     - name: Build/push frontend Docker image
-#       docker_image:
-#         name: "{{ docker_front_repo }}"
-#         tag: "{{ build_number }}"
-#         path: "{{ build_path }}/frontend"
-#         source: build
-#         push: yes
-#         build:
-#           pull: yes
-
-#     - name: Build/push backend Docker image
-#       docker_image:
-#         name: "{{ docker_back_repo }}"
-#         tag: "{{ build_number }}"
-#         path: "{{ build_path }}/backend"
-#         source: build
-#         push: yes
-#         build:
-#           pull: yes
-
-#     ### ARGOCD DEPLOYMENT ###
-#     - name: Update frontend image tag in ArgoCD
-#       command: >
-#         argocd app set frontend --parameter image.tag={{ build_number }}
-
-#     - name: Sync frontend app in ArgoCD
-#       command: argocd app sync frontend-{{ target_env }}
-
-#     - name: Update backend image tag in ArgoCD
-#       command: >
-#         argocd app set backend --parameter image.tag={{ build_number }}
-
-#     - name: Sync backend app in ArgoCD
-#       command: argocd app sync backend-{{ target_env }}
