@@ -55,6 +55,10 @@
     # - name: Sync frontend app in ArgoCD
     #   command: argocd app sync frontend-{{ target_env }}
 
+    - name: Login to argocd
+      shell: |
+        argocd login localhost:9090 --username admin --password Nag@9494 --insecure
+
     - name: Update backend image tag in ArgoCD
       command: >
         argocd app set backend --parameter image.tag=1.0
