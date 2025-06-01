@@ -35,17 +35,17 @@
       args:
         chdir: "{{ playbook_dir }}/.."
         
-    - name: Build/push backend Docker image
-      docker_image:
-        name: "{{ docker_back_repo }}"
-        tag: "{{ build_number }}"
-        repository: "https://github.com/NagaBhushan9676/bhushan_PhotoQuest.git"
-        source: build
-        push: yes
-        build:
-          pull: yes
-          path: .
-          context_subdir: "backend"   # Path to backend Dockerfile in repo
+    # - name: Build/push backend Docker image
+    #   docker_image:
+    #     name: "{{ docker_back_repo }}"
+    #     tag: "{{ build_number }}"
+    #     repository: "https://github.com/NagaBhushan9676/bhushan_PhotoQuest.git"
+    #     source: build
+    #     push: yes
+    #     build:
+    #       pull: yes
+    #       path: .
+    #       context_subdir: "backend"   # Path to backend Dockerfile in repo
 
     ### ARGOCD DEPLOYMENT ###
     # - name: Update frontend image tag in ArgoCD
