@@ -21,12 +21,12 @@
   #         context_subdir: "searchI"   # Path to frontend Dockerfile in repo
   tasks:
     ### DOCKER IMAGE BUILD & PUSH ###
-    - name: Build/push frontend Docker image
-      shell: |
-        docker build -t {{ docker_front_repo }}:{{ build_number }} -f searchI/Dockerfile ./searchI
-        docker push {{ docker_front_repo }}:{{ build_number }}
-      args:
-        chdir: "{{ playbook_dir }}/.."
+    # - name: Build/push frontend Docker image
+    #   shell: |
+    #     docker build -t {{ docker_front_repo }}:{{ build_number }} -f searchI/Dockerfile ./searchI
+    #     docker push {{ docker_front_repo }}:{{ build_number }}
+    #   args:
+    #     chdir: "{{ playbook_dir }}/.."
 
     - name: Build/push backend Docker image
       shell: |
@@ -48,16 +48,16 @@
           context_subdir: "backend"   # Path to backend Dockerfile in repo
 
     ### ARGOCD DEPLOYMENT ###
-    - name: Update frontend image tag in ArgoCD
-      command: >
-        argocd app set frontend --parameter image.tag={{ build_number }}
+    # - name: Update frontend image tag in ArgoCD
+    #   command: >
+    #     argocd app set frontend --parameter image.tag={{ build_number }}
 
-    - name: Sync frontend app in ArgoCD
-      command: argocd app sync frontend-{{ target_env }}
+    # - name: Sync frontend app in ArgoCD
+    #   command: argocd app sync frontend-{{ target_env }}
 
     - name: Update backend image tag in ArgoCD
       command: >
-        argocd app set backend --parameter image.tag={{ build_number }}
+        argocd app set backend --parameter image.tag=1.0
 
     - name: Sync backend app in ArgoCD
       command: argocd app sync backend-{{ target_env }}
