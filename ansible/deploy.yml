@@ -57,7 +57,7 @@
 
     - name: Login to argocd
       shell: |
-        argocd login 10.255.255.254:50892 --username admin --password Nag@9494 --insecure
+        argocd login 127.0.0.1:9090 --username admin --password Nag@9494 --insecure
 
     - name: Update backend image tag in ArgoCD
       command: >
