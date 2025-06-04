@@ -57,7 +57,7 @@
 
     - name: Login to argocd
       shell: |
-        argocd login 172.17.0.1:9090 --username admin --password Nag@9494 --insecure  --grpc-web
+        argocd login argocd-server.argocd.svc.cluster.local:443 --username admin --password Nag@9494 --insecure  --grpc-web
 
       register: login_result
       retries: 3
