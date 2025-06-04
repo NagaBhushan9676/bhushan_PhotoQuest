@@ -57,7 +57,17 @@
 
     - name: Login to argocd
       shell: |
-        argocd login 172.17.0.1:9090 --username admin --password Nag@9494 --insecure
+        argocd login 172.17.0.1:9090 --username admin --password Nag@9494 --insecure  --grpc-webhook=false
+
+      register: login_result
+      retries: 3
+      delay: 5
+      until: login_result.rc == 0
+      changed_when: false
+      
+    - name: Debug login result
+      debug:
+        var: login_result
 
     - name: Update backend image tag in ArgoCD
       command: >
