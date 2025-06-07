@@ -57,7 +57,7 @@
 
     - name: Login to argocd
       shell: |
-        argocd login localhost:31382 --username admin --password Nag@9494 --insecure  --grpc-web
+        argocd login 172.26.10.131:31382 --username admin --password Nag@9494 --insecure --grpc-web
 
       register: login_result
       retries: 3
