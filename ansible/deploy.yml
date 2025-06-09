@@ -71,7 +71,7 @@
 
     - name: Update backend image tag in ArgoCD
       command: >
-        argocd app set b-photoquest --parameter backend.image.tag=65 --grpc-web
+        argocd app set b-photoquest --parameter backend.image.tag=1.0 --grpc-web
 
 
     - name: Sync backend app in ArgoCD
