@@ -30,8 +30,8 @@
 
     - name: Build/push backend Docker image
       shell: |
-        docker build -t {{ docker_back_repo }}:{{ build_number }} -f backend/Dockerfile ./backend
-        docker push {{ docker_back_repo }}:{{ build_number }}
+        docker build -t {{ docker_back_repo }}:1.0 -f backend/Dockerfile ./backend
+        docker push {{ docker_back_repo }}:1.0
       args:
         chdir: "{{ playbook_dir }}/.."
         
@@ -57,7 +57,7 @@
 
     - name: Login to argocd
       shell: |
-        argocd login argocd-server.argocd.svc.cluster.local:443 --username admin --password Nag@9494 --insecure  --grpc-web
+        argocd login 172.26.10.131:31382 --username admin --password Nag@9494 --insecure --grpc-web
 
       register: login_result
       retries: 3
